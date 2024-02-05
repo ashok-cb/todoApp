@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href=" https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/color/jquery.color-2.2.0.js" integrity="sha256-gvMJWDHjgDrVSiN6eBI9h7dRfQmsTTsGU/eTT8vpzNg=" crossorigin="anonymous"></script>
+
+    <style>
+      .item:hover{
+               border: 1px solid black;
+               border-radius: 10px;
+      } 
+      ::-webkit-scrollbar {
+         width: 1px;
+         }
+          .ptext{
+              text-align: justify;
+            } 
+    </style>
+  </head>
+<body>
+    <div class="container">
+           <div  class="row" style="height: 100vh;" >
+                 <div id="app-body" class="col-12 col-sm-12 col-md-10 col-lg-6 mx-auto my-auto border position-relative" style="height: 60vh;">
+                    
+                     <div class="row">
+                      <h1 class="mt-4 ms-3">Todo App</h1>
+                          <div id="headerBox" class="d-inline-flex justify-content-center">
+                            <input id="input" placeholder="Add activity here" type="text" class="col-10 mt-4 ps-3 py-2 rounded-3">
+                            <button id="add" class="col-1 ms-2 mt-4 btn btn-primary fw-bold" style="display:block;"><i class="fa-solid fa-plus"></i></button>
+                            <button id="remove" class="col-1 ms-2 mt-4 btn btn-danger fw-bold" style="display:block;"><i class="fa-solid fa-xmark"></i></button>  
+                          </div>  
+                    </div>
+                     <div class=" mt-2 mb-5" id="inputDisplay" style="overflow-y:scroll;height: 27vh;">
+
+
+        
+
+                     </div>
+                     <div id="footbox" class="footer position-absolute fixed-bottom d-inline-flex justify-content-center mb-3 row mt-3 ms-3">
+                         <span id="totalstatus" class="col-5 col-sm-5 col-md-4 col-lg-4 d-flex my-auto">Total tasks:0</span>
+                         <span id="pendingstatus" class="col-6 col-sm-6 col-md-4 col-lg-4  mt-xs-5 d-flex my-auto">Pending Tasks:0</span>
+                         <button id="Clearall"  class="col-10 col-sm-10 col-md-3 col-lg-3 btn btn-primary">Clear All</button>
+                     </div>
+                 </div>
+           </div>
+       </div>
+     
+       <div id="model">
+          <div class="exampleModalToggle modal fade">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-body">
+                  are you want to delete?
+                </div>
+                <div class="modal-footer">
+                  <button class="removeBtn btn btn-primary" onclick="removeItem(taskIdToDelete)" data-bs-dismiss="modal">delete</button>
+                  <button class=" btn btn-primary"  data-bs-dismiss="modal">cancle</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+          <div class="changeActivity modal fade">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-body row">
+                   <h4 class="col-10 fst-italic">Hey...Edit your Activity here</h4>
+                   <div class="col-2" data-bs-dismiss="modal"><i class="fa-solid fa-xmark btn align-right"></i></div>
+                   <div class="d-inline-flex justify-content-center">
+                   <input id="enterActivity" placeholder="Add activity here" type="text" class="col-10 ps-3 py-2">
+                   <button id="addActivity" class="col-1 ms-2  btn btn-primary fw-bold" style="display:block;"><i class="fa-solid fa-plus"></i></button>
+                   <button id="removeActivity" class="col-1 ms-2  btn btn-danger fw-bold" style="display:block;"><i class="fa-solid fa-xmark"></i></button>  
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+       <script>
+           var pendingCount=0;
+           var itemCount = 0;
+           var taskIdToDelete = null;
+           var taskIdToComment=null
+           var changeActivity=null
+           var focusId=null;
+           var headerBox=''
+           var footBox=''
+           var editCmtId=0
+           var editCmtText=''
+           var seteditCmtId=null
+           
+           $('#addActivity').on('click',function(){              
+             var reEnteredActivity=$('#enterActivity').val()
+             console.log(changeActivity);
+             $(`#${changeActivity}`).children('.item').children().children('.ptext').text(reEnteredActivity)
+             $('#enterActivity').val('')
+           })
+
+
+           $('#removeActivity').on('click',function(){
+              $('#enterActivity').val('')
+           })
+           
+           $(document).on("click", ".provideId", function () {
+           var ids = $(this).parent().attr('id')
+            taskIdToDelete=ids
+            changeActivity=$(this).parent().parent().attr('id')
+           })
+           
+           function provideIdcmt(id) {
+              taskIdToComment=id;
+              headerBox=$('#headerBox')
+               footBox = $('#footbox')
+              $(headerBox).addClass("d-none");
+              $(footBox).addClass("d-none");
+              $('#inputDisplay').css('height','39vh')
+              $(`#${id}`).children('.notepad').css({'display':'block'})
+           }
+           
+           function closeCommentBox(id){
+            $(headerBox).removeClass("d-none");
+              $(footBox).removeClass("d-none");
+              $('#inputDisplay').css('height','27vh')
+              $(`#${id}`).children('.notepad').hide()
+           }
+           $(window).on('load',function(){
+            $('#Clearall').hide()
+            $('#add').prop("disabled",true)
+            $('#remove').prop("disabled",true)
+           })
+
+           $('#input').keyup(function(){
+            $('#add').prop("disabled",false)
+            $('#remove').prop("disabled",false)
+             var input= $('#input').val()
+          //      $('#add').show()
+          //      $('#remove').show()
+                if(input.trim()==''){
+                  $('#add').prop("disabled",true)
+                  $('#remove').prop("disabled",true)
+                } 
+          //       $('#add').hide()
+          //       $('#remove').hide()
+          //      }
+           })
+
+           $('#remove').on('click',function(){
+            $('#input').val('')
+            $('#add').prop("disabled",true)
+            $('#remove').prop("disabled",true)
+            // $('#add').hide()
+            // $('#remove').hide()
+           })
+
+           $("#add").on('click',function() {
+
+            $('#add').prop("disabled",true)
+            $('#remove').prop("disabled",true)
+            var input= $('#input').val()
+            if(input.trim()!=''){
+              var newItem=$(`<div id='${itemCount+1}'>
+                        <div id='${itemCount+1}' class="item d-inline-flex bg-light border-2 mt-2 ms-xs-1 mx-auto" style="width:100%;">
+                          <div class="ps-3 d-flex my-auto">
+                              <p class="ptext text-break my-auto">${input}</p>
+                              <a class="btn my-auto" onclick='provideIdcmt(${itemCount+1})' ><i class="fa-regular fa-clipboard"></i></a>
+                              <a class="provideId btn me-auto my-auto" data-bs-target=".changeActivity" data-bs-toggle="modal"><i class="fa-solid fa-pen-to-square"></i></a>
+                          </div>
+                              <input class="checkb ms-auto my-auto" type="checkbox" value='tru'>
+                              <a class="removeline btn mx-1 my-auto"><i class="fa-solid fa-xmark"></i></a>
+                              <a class="provideId btn  my-auto" data-bs-target=".exampleModalToggle" data-bs-toggle="modal"><i class="fa-solid fa-trash-can"></i></a>
+                        </div> 
+                          <div class="notepad" class="row">
+                            <div class="comtdiv col">
+                                      <div class="commentBox row mx-auto bg-light" style='width:80%'> 
+                                         <span id='nocomment' class='col-8'>No comments</span>
+                                         <div class=" col-4" align='right'><i onclick='closeCommentBox(${itemCount+1})' class="fa-solid fa-xmark btn"></i></div>
+                                      </div>
+                                      <div class="container">
+                                          <div  class="addBlock row mt-2 mx-auto" style='width:80%'>
+                                            <input id="noteInput" type="text" class="col-9 ms-1 ms-sm-3   rounded-3">
+                                            <button id="addNote" onclick="addcomment(${itemCount+1})" class="col-2 btn btn-primary ms-2 text-center p-none" >Add</button>
+                                          </div>
+                                          <div class="editBlock row mt-2 mx-auto d-none" style='width:80%'>
+                                            <input id="editNoteInput" type="text" class="col-9 ms-1 ms-sm-3   rounded-3">
+                                            <button id="addEditNote" onclick="addEditCmt(${itemCount+1})" class="col-2 btn btn-primary ms-2 text-center p-none" >Edit</button>
+                                          </div>
+                                      </div>
+                            </div>
+                         </div>
+                         <div>`)
+              $('#Clearall').show()
+              $('#inputDisplay').append(newItem);
+              $('.notepad').css('display','none')
+              itemCount++;
+              pendingCount++;
+            }
+            focusId= newItem.attr('id')
+            var fs= document.getElementById(`${focusId}`)
+              fs.scrollIntoView(true)
+            $('#input').val('')
+            $('#totalstatus').text(`Total tasks: ${itemCount} `)
+            $('#pendingstatus').text(`Pending Task: ${pendingCount}`)
+            // $('#add').hide()
+            // $('#remove').hide()
+           })  
+             
+           function addcomment(id) {
+               editCmtId++;
+               var noteInput= $(`#${id}`).children('.notepad').children('.comtdiv').children('.container').children().children('#noteInput').val()
+               $(`#${id}`).children('.notepad').children('.comtdiv').children('.commentBox').children('#nocomment').text('')
+               if(noteInput.trim()!=''){
+                  $(`#${id}`).children('.notepad')
+                   var newComment=$(`<div id="cmt${editCmtId}" class='mt-2 bg-warning p-2 rounded-3 mx-auto' style='width:80%'><div id='cmt' class='d-inline'>${noteInput}</div><i onclick='editcmt(cmt${editCmtId})' class="fa-solid fa-pen-to-square btn ms-auto d-inline"></div>`)
+                   $(`#${id}`).children('.notepad').children().children('.commentBox').append(newComment)
+                }
+                $(`#${id}`).children('.notepad').children('.comtdiv').children('.container').children().children('#noteInput').val('')
+             }
+             
+            function addEditCmt(id){
+             var geteditNoteInput= $(`#${id}`).children('.notepad').children('.comtdiv').children('.container').children('.editBlock').children('#editNoteInput').val()
+              $(seteditCmtId).children('#cmt').text(geteditNoteInput)
+              $(id).parent('.commentBox').parent('.comtdiv').children('.container').children('.addBlock').addClass('d-none')
+              $(id).parent('.commentBox').parent('.comtdiv').children('.container').children('.editBlock').removeClass('d-none') 
+              $(`#${id}`).children('.notepad').children('.comtdiv').children('.container').children('.editBlock').children('#editNoteInput').val()
+              $(seteditCmtId).parent('.commentBox').parent('.comtdiv').children('.container').children('.addBlock').removeClass('d-none')
+                $(seteditCmtId).parent('.commentBox').parent('.comtdiv').children('.container').children('.editBlock').addClass('d-none') 
+            }
+
+            function editcmt(id){
+                 seteditCmtId=id 
+                 editCmtText=$(id).text()
+                $(id).parent('.commentBox').parent('.comtdiv').children('.container').children('.addBlock').addClass('d-none')
+                $(id).parent('.commentBox').parent('.comtdiv').children('.container').children('.editBlock').removeClass('d-none') 
+                $(id).parent('.commentBox').parent('.comtdiv').children('.container').children('.editBlock').children('#editNoteInput').val(editCmtText)
+              }
+
+            $( "#Clearall" ).click( function() {
+              $('#add').prop("disabled",true)
+              $('#remove').prop("disabled",true)
+              $("#inputDisplay").children().remove();
+              itemCount=0;
+              pendingCount=0
+              $('#totalstatus').text(`Total tasks: ${itemCount}`)
+              $('#pendingstatus').text(`Pending Task:${pendingCount}`)
+              $('#Clearall').hide()
+              $('#input').val('')
+             } );
+
+             function removeItem(id) {
+               itemCount--;
+               $('#totalstatus').text(`Total tasks: ${itemCount}`)
+              if( $(`#${id}`).children().children('.checkb').prop("checked")==false){
+               pendingCount--
+               $('#pendingstatus').text(`Pending Task:${pendingCount}`)
+               }
+               $(`#${id}`).remove()
+               if(itemCount<1){
+                $('#Clearall').hide()
+               }
+               headerBox=$('#headerBox')
+               footBox = $('#footbox')
+              $(headerBox).removeClass("d-none");
+              $(footBox).removeClass ("d-none");
+              $('#inputDisplay').css('height','27vh')
+              }
+
+            function crossLineOnText(){
+              // $('.ptext').css("text-decoration","line-through")
+              $(this).parent('.item').css("text-decoration","line-through")
+              $(this).parent('.item').children('.checkb').prop("checked",true)
+              if($(this).parent('.item').children('.checkb').val()=='tru'){
+                pendingCount--;
+                $(this).parent('.item').children('.checkb').val('fls')
+              $('#pendingstatus').text(`Pending Task: ${pendingCount}  `)
+              }
+            }
+
+            function removeLineOnText(){
+              $(this).parent('.item').css("text-decoration","none")
+              $(this).parent('.item').children('.checkb').prop("checked",false)
+             if($(this).parent('.item').children('.checkb').val()=='fls')
+             {pendingCount++;
+              $(this).parent('.item').children('.checkb').val('tru')
+              $('#pendingstatus').text(`Pending Task: ${pendingCount}`)}
+            }
+
+            $('#inputDisplay').on('click', '.removeline',removeLineOnText);
+            $('#inputDisplay').on('click', '.checkb', crossLineOnText);
+
+       </script>
+
+<!-- .css(" text-decoration","underline")  -->
+</body>
+</html>
